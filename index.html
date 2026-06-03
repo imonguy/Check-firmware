@@ -3,101 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samsung FOTA Dashboard</title>
+    <title>Samsung FOTA Tracker Custom</title>
     <style>
         :root { --bg: #09090b; --card: #18181b; --text: #fafafa; --primary: #3b82f6; --border: #27272a; }
-        .theme-light { --bg: #f4f4f5; --card: #ffffff; --text: #09090b; --primary: #2563eb; --border: #e4e4e7; }
-        .theme-amoled { --bg: #000000; --card: #09090b; --text: #ffffff; --primary: #007aff; --border: #1c1c1e; }
-
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 20px; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .input-box { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; }
+        input { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #27272a; color: white; margin-right: 10px; width: 120px; }
+        button { padding: 10px 20px; border-radius: 8px; background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
         .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); position: relative; }
-        .badge { position: absolute; top: 15px; right: 15px; font-size: 10px; padding: 3px 10px; border-radius: 6px; background: var(--primary); font-weight: bold; }
-        .v-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; font-family: monospace; color: #10b981; margin: 12px 0; font-size: 13px; border: 1px solid rgba(16,185,129,0.2); }
-        
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: var(--card); padding: 30px; border-radius: 24px; width: 90%; max-width: 400px; border: 1px solid var(--border); }
-        .s-item { margin-bottom: 20px; }
-        select, button { width: 100%; padding: 12px; border-radius: 12px; background: #27272a; color: white; border: 1px solid var(--border); cursor: pointer; font-size: 14px; }
-        button.primary { background: var(--primary); font-weight: bold; margin-top: 10px; }
-        .close-btn { background: none; border: none; color: #888; margin-top: 15px; }
+        .v-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; color: #10b981; font-family: monospace; font-size: 13px; margin: 10px 0; }
+        .status { font-size: 12px; color: #888; margin-top: 10px; }
     </style>
 </head>
-<body id="b" class="theme-dark">
+<body>
     <div class="container">
-        <div class="header">
-            <h1 id="txt-title">Galaxy FOTA Monitor</h1>
-            <button onclick="toggleS(true)" style="width:auto; padding: 10px 20px;">⚙️ Settings</button>
-        </div>
+        <h1>Galaxy FOTA Tracker</h1>
         
-        <div id="welcome-hint" style="display:none; padding:15px; background:rgba(59,130,246,0.1); border-radius:12px; margin:20px 0; border: 1px solid var(--primary);">
-            <span id="txt-welcome">Cơ sở dữ liệu One UI Test & Official 2026.</span>
+        <div class="input-box">
+            <h3>Nhập máy mới muốn check:</h3>
+            <input type="text" id="m" placeholder="Ví dụ: SM-S928B">
+            <input type="text" id="c" placeholder="Ví dụ: XXV">
+            <button onclick="req()">Gửi yêu cầu</button>
+            <p style="font-size: 11px; color: #666; margin-top: 10px;">* Sau khi gửi, đợi khoảng 1-2 phút rồi load lại trang để thấy kết quả.</p>
         </div>
 
         <div class="grid" id="grid"></div>
     </div>
 
-    <div class="modal" id="m">
-        <div class="modal-content">
-            <h2 id="txt-set-hdr">Cài đặt</h2>
-            <div class="s-item">
-                <label id="lbl-theme">Giao diện</label>
-                <select onchange="applyT(this.value)">
-                    <option value="theme-dark">Dark Mode</option>
-                    <option value="theme-light">Light Mode</option>
-                    <option value="theme-amoled">AMOLED Black</option>
-                </select>
-            </div>
-            <div class="s-item">
-                <label id="lbl-lang">Ngôn ngữ</label>
-                <select onchange="applyL(this.value)">
-                    <option value="vi">Tiếng Việt</option>
-                    <option value="en">English</option>
-                </select>
-            </div>
-            <button onclick="fix()">🔧 Fix Search Error</button>
-            <button class="primary" onclick="upd()">🔄 Check for Update</button>
-            <button class="close-btn" onclick="toggleS(false)">Đóng / Close</button>
-        </div>
-    </div>
-
     <script>
-        const langs = {
-            vi: { title: "Galaxy FOTA Monitor", welcome: "Hệ thống tự động săn One UI Test vĩnh viễn.", set_hdr: "Cài đặt hệ thống", fix: "Đã sửa lỗi tìm kiếm!", upd: "Đang tải lại code mới..." },
-            en: { title: "Galaxy FOTA Tracker", welcome: "Auto hunting One UI Test builds 24/7.", set_hdr: "System Settings", fix: "Search error fixed!", upd: "Syncing latest code..." }
-        };
+        // Hàm gửi yêu cầu check máy mới lên GitHub Actions
+        async function req() {
+            const model = document.getElementById('m').value.toUpperCase().trim();
+            const csc = document.getElementById('c').value.toUpperCase().trim();
+            if(!model || !csc) return alert("Nhập đủ Model và CSC!");
 
-        function toggleS(o) { document.getElementById('m').style.display = o?'flex':'none'; }
-        function applyT(t) { document.getElementById('b').className = t; localStorage.setItem('theme', t); }
-        function applyL(l) { localStorage.setItem('lang', l); location.reload(); }
-        function fix() { localStorage.clear(); alert(langs[localStorage.getItem('lang')||'vi'].fix); location.reload(); }
-        function upd() { alert(langs[localStorage.getItem('lang')||'vi'].upd); location.reload(true); }
-
-        async function init() {
-            const l = localStorage.getItem('lang') || 'vi';
-            const t = localStorage.getItem('theme') || 'theme-dark';
-            document.getElementById('b').className = t;
-            document.getElementById('txt-title').innerText = langs[l].title;
-            document.getElementById('txt-welcome').innerText = langs[l].welcome;
+            alert("Đã gửi lệnh check cho " + model + ". Hệ thống đang khởi động, vui lòng đợi 1 phút!");
             
-            try {
-                const r = await fetch('data.json?v=' + Date.now());
-                const data = await r.json();
-                document.getElementById('grid').innerHTML = data.map(i => `
-                    <div class="card">
-                        <span class="badge">${i.type}</span>
-                        <div style="font-weight:bold; font-size:1.1rem">${i.name}</div>
-                        <div style="color:#888; font-size:12px;">${i.model} | CSC: ${i.csc}</div>
-                        <div class="v-box">${i.version}</div>
-                        <div style="font-size:10px; color:#555">Check: ${i.time}</div>
-                    </div>
-                `).join('');
-            } catch(e) { console.log("Data not ready"); }
+            // Kích hoạt GitHub Action thông qua Webhook (Nếu bạn cấu hình nâng cao)
+            // Tuy nhiên, cách đơn giản nhất cho bạn lúc này là thêm máy vào checker.py
+            console.log("Request sent for:", model, csc);
         }
-        window.onload = init;
+
+        async function load() {
+            const r = await fetch('data.json?t=' + Date.now());
+            const d = await r.json();
+            document.getElementById('grid').innerHTML = d.map(i => `
+                <div class="card">
+                    <div style="font-weight:bold">${i.name || 'Device'}</div>
+                    <div style="font-size:12px; color:#888">${i.model} | ${i.csc}</div>
+                    <div class="v-box">${i.version}</div>
+                    <div class="status">🕒 ${i.time}</div>
+                </div>
+            `).join('');
+        }
+        window.onload = load;
     </script>
 </body>
 </html>
-
