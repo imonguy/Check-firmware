@@ -1,3 +1,106 @@
 [
-    { "name": "Hệ thống", "model": "Khởi tạo", "csc": "FUS", "version": "Vui lòng đợi Action chạy lần đầu...", "type": "System", "time": "2026" }
+    {
+        "name": "Galaxy S24 Ultra",
+        "model": "SM-S928B",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "S Series",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Galaxy S24",
+        "model": "SM-S921B",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "S Series",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Galaxy S23 FE",
+        "model": "SM-S711B",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "S FE",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Galaxy Z Fold 5",
+        "model": "SM-F946B",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "Z Series",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Galaxy Z Flip 5",
+        "model": "SM-F731B",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "Z Series",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Galaxy A55",
+        "model": "SM-A556E",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "A Series",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Galaxy A35",
+        "model": "SM-A356E",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "A Series",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Galaxy M55",
+        "model": "SM-M556B",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "M Series",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Tab S9 Ultra",
+        "model": "SM-X910",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "Tab S",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Tab S9 FE",
+        "model": "SM-X510",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "Tab FE",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Tab S6 Lite",
+        "model": "SM-P613",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "Tab Lite",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "Tab A9+",
+        "model": "SM-X210",
+        "csc": "XXV",
+        "version": "Server Error",
+        "type": "Tab A",
+        "time": "08:23 - 03/06/2026"
+    },
+    {
+        "name": "S24 Ultra (Internal EU)",
+        "model": "SM-S928B",
+        "csc": "EUX",
+        "version": "Server Error",
+        "type": "Internal Test",
+        "time": "08:23 - 03/06/2026"
+    }
 ]
