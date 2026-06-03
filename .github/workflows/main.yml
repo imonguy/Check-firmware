@@ -1,27 +1,24 @@
 name: Galaxy FOTA Ultimate Auto
 on:
+  workflow_dispatch:
   schedule:
-    - cron: '0 * * * *' # Chạy mỗi 60 phút
-  workflow_dispatch: # Nút bấm chạy tay
+    - cron: '0 * * * *'
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with: {python-version: '3.9'}
-      - name: Install dependencies
-        run: pip install httpx
-      - name: Run FOTA Checker
-        run: python checker.py
+        with:
+          fetch-depth: 0
+      - setup-python@v4
+        with:
+          python-version: '3.9'
+      - run: pip install httpx
+      - run: python checker.py
       - name: Save Results
         run: |
           git config --global user.name 'Galaxy-Bot'
-          git config --global user.email 'bot@fota.com'
+          git config --global user.email 'bot@galaxy.com'
           git add data.json
           git commit -m "Capture: Latest Firmware [skip ci]" || exit 0
-          git push
-
+          git push origin main --force
