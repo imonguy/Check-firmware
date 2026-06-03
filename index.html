@@ -3,43 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samsung FOTA Tracker</title>
+    <title>Samsung Firmware Tracker</title>
     <style>
-        :root { --bg: #0b0e14; --card: #151921; --text: #e1e7ef; --primary: #3e81f1; --border: #262c36; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
-        .container { max-width: 500px; margin: 0 auto; }
-        .card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; }
-        .v-box { background: rgba(16,185,129,0.1); border: 1px solid #10b981; color: #10b981; padding: 12px; border-radius: 10px; font-family: monospace; font-size: 13px; margin-top: 10px; word-break: break-all; }
-        .info { font-size: 12px; color: #888; margin-top: 10px; }
-        h2 { text-align: center; color: var(--primary); }
+        :root { --bg: #09090b; --card: #18181b; --text: #fafafa; --primary: #3b82f6; --border: #27272a; --success: #10b981; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 24px; margin-bottom: 5px; color: var(--primary); }
+        .subtitle { color: #71717a; font-size: 14px; }
+        
+        #list { display: flex; flex-direction: column; gap: 15px; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 16px; transition: 0.2s; }
+        .card:hover { border-color: var(--primary); }
+        .model-name { font-weight: bold; font-size: 18px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .csc-badge { font-size: 11px; background: #27272a; padding: 2px 8px; border-radius: 4px; color: #a1a1aa; }
+        .v-box { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: var(--success); padding: 12px; border-radius: 10px; font-family: ui-monospace, monospace; font-size: 13px; margin-top: 12px; word-break: break-all; line-height: 1.4; }
+        .time { font-size: 11px; color: #52525b; margin-top: 12px; display: flex; align-items: center; gap: 5px; }
+        
+        .loading { text-align: center; color: #52525b; margin-top: 50px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Samsung FOTA Tracker</h2>
-        <div id="list">Đang tải dữ liệu...</div>
+        <header>
+            <h1>Galaxy FOTA Tracker</h1>
+            <div class="subtitle">Tự động cập nhật từ Samsung Server</div>
+        </header>
+
+        <div id="list">
+            <div class="loading">Đang tải dữ liệu firmware...</div>
+        </div>
     </div>
 
     <script>
-        async function load() {
+        async function updateUI() {
             try {
-                // Thêm ?t= để tránh trình duyệt lưu bản cũ
-                const r = await fetch('data.json?t=' + Date.now());
-                const d = await r.json();
-                document.getElementById('list').innerHTML = d.map(i => `
+                // Thêm tham số t để tránh lưu cache
+                const response = await fetch('data.json?t=' + Date.now());
+                const data = await response.json();
+                
+                const html = data.map(item => `
                     <div class="card">
-                        <div style="font-weight:bold; font-size: 18px;">${i.model} (${i.csc})</div>
-                        <div class="v-box">${i.version}</div>
-                        <div class="info">🕒 Cập nhật: ${i.time}</div>
+                        <div class="model-name">
+                            ${item.model}
+                            <span class="csc-badge">${item.csc}</span>
+                        </div>
+                        <div class="v-box">${item.version}</div>
+                        <div class="time">🕒 Cập nhật: ${item.time}</div>
                     </div>
                 `).join('');
-            } catch(e) {
-                document.getElementById('list').innerHTML = "Chưa có dữ liệu. Vui lòng chạy Action trên GitHub.";
+                
+                document.getElementById('list').innerHTML = html;
+            } catch (error) {
+                document.getElementById('list').innerHTML = `
+                    <div style="text-align:center; color:#ef4444; padding:20px;">
+                        Chưa có dữ liệu. Hãy chạy Action trên GitHub trước!
+                    </div>`;
             }
         }
-        load();
-        // Tự động load lại sau mỗi 30 giây
-        setInterval(load, 30000);
+
+        updateUI();
+        // Tự động làm mới mỗi 1 phút
+        setInterval(updateUI, 60000);
     </script>
 </body>
 </html>
