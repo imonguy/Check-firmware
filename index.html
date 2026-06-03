@@ -3,89 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samsung FOTA Instant</title>
+    <title>Samsung FOTA Tracker</title>
     <style>
         :root { --bg: #0b0e14; --card: #151921; --text: #e1e7ef; --primary: #3e81f1; --border: #262c36; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .box { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid var(--border); width: 90%; max-width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        h2 { margin-top: 0; text-align: center; color: var(--primary); }
-        .group { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
-        input { padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: #1c222d; color: white; font-size: 16px; transition: 0.3s; }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(62,129,241,0.2); }
-        button { padding: 14px; border-radius: 12px; background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        #res { margin-top: 25px; padding: 15px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); display: none; animation: fadeIn 0.5s; }
-        .v { color: #10b981; font-family: 'Courier New', Courier, monospace; word-break: break-all; margin-top: 8px; font-weight: bold; background: rgba(16,185,129,0.1); padding: 10px; border-radius: 8px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; }
+        .v-box { background: rgba(16,185,129,0.1); border: 1px solid #10b981; color: #10b981; padding: 12px; border-radius: 10px; font-family: monospace; font-size: 13px; margin-top: 10px; word-break: break-all; }
+        .info { font-size: 12px; color: #888; margin-top: 10px; }
+        h2 { text-align: center; color: var(--primary); }
     </style>
 </head>
 <body>
-
-<div class="box">
-    <h2>Samsung FOTA Quick</h2>
-    <div class="group">
-        <input type="text" id="m" placeholder="Model (VD: SM-S928B)" autocomplete="off">
-        <input type="text" id="c" placeholder="CSC (VD: XXV)" autocomplete="off">
-        <button id="b" onclick="go()">TRA CỨU NGAY</button>
+    <div class="container">
+        <h2>Samsung FOTA Tracker</h2>
+        <div id="list">Đang tải dữ liệu...</div>
     </div>
 
-    <div id="res">
-        <div style="font-size: 13px; color: #888;">Phiên bản mới nhất:</div>
-        <div id="v" class="v"></div>
-    </div>
-</div>
-
-<script>
-    async function go() {
-        const m = document.getElementById('m').value.toUpperCase().trim();
-        const c = document.getElementById('c').value.toUpperCase().trim();
-        const b = document.getElementById('b');
-        const r = document.getElementById('res');
-        const v = document.getElementById('v');
-
-        if(!m || !c) return alert("Vui lòng nhập đủ thông tin!");
-
-        b.disabled = true;
-        b.innerText = "⏳ Đang kết nối...";
-        r.style.display = "none";
-
-        // Sử dụng Proxy corsproxy.io (ổn định hơn cho Samsung FOTA)
-        const proxy = "https://corsproxy.io/?";
-        const target = "https://fota-cloud-dn.ospserver.net/firmware/FUS/check";
-        const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><FUSRequest><Device><Model>${m}</Model><SalesCode>${c}</SalesCode></Device><Protocol>3.0</Protocol></FUSRequest>`;
-
-        try {
-            const response = await fetch(proxy + encodeURIComponent(target), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/xml' },
-                body: xml
-            });
-
-            const text = await response.text();
-            
-            // Giải mã Base64 sang XML thuần
-            const decoded = atob(text);
-            
-            // Tìm fw_version hoặc latest
-            const match = decoded.match(/<fw_version>([^<]+)<\/fw_version>/) || decoded.match(/<latest>([^<]+)<\/latest>/);
-
-            if (match) {
-                v.innerText = match[1];
-                r.style.display = "block";
-            } else {
-                v.innerText = "❌ Không tìm thấy firmware cho Model/CSC này.";
-                r.style.display = "block";
+    <script>
+        async function load() {
+            try {
+                // Thêm ?t= để tránh trình duyệt lưu bản cũ
+                const r = await fetch('data.json?t=' + Date.now());
+                const d = await r.json();
+                document.getElementById('list').innerHTML = d.map(i => `
+                    <div class="card">
+                        <div style="font-weight:bold; font-size: 18px;">${i.model} (${i.csc})</div>
+                        <div class="v-box">${i.version}</div>
+                        <div class="info">🕒 Cập nhật: ${i.time}</div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                document.getElementById('list').innerHTML = "Chưa có dữ liệu. Vui lòng chạy Action trên GitHub.";
             }
-        } catch (e) {
-            v.innerText = "❌ Lỗi: Server Samsung đang từ chối kết nối. Hãy thử lại sau vài giây.";
-            r.style.display = "block";
-        } finally {
-            b.disabled = false;
-            b.innerText = "TRA CỨU NGAY";
         }
-    }
-</script>
-
+        load();
+        // Tự động load lại sau mỗi 30 giây
+        setInterval(load, 30000);
+    </script>
 </body>
 </html>
