@@ -3,93 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant FOTA Check</title>
+    <title>Samsung FOTA Instant</title>
     <style>
-        :root { --bg: #09090b; --card: #18181b; --text: #fafafa; --primary: #3b82f6; --border: #27272a; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .search-card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .input-group { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-        input { padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: #27272a; color: white; font-size: 16px; outline: none; }
-        input:focus { border-color: var(--primary); }
-        button { padding: 15px; border-radius: 12px; background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; }
-        button:active { transform: scale(0.98); }
+        :root { --bg: #0b0e14; --card: #151921; --text: #e1e7ef; --primary: #3e81f1; --border: #262c36; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .box { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid var(--border); width: 90%; max-width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        h2 { margin-top: 0; text-align: center; color: var(--primary); }
+        .group { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+        input { padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: #1c222d; color: white; font-size: 16px; transition: 0.3s; }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(62,129,241,0.2); }
+        button { padding: 14px; border-radius: 12px; background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        /* Khu vực hiển thị kết quả */
-        #result-area { margin-top: 25px; display: none; border-top: 1px solid var(--border); padding-top: 20px; }
-        .res-label { color: #888; font-size: 12px; margin-bottom: 5px; }
-        .res-value { background: rgba(16,185,129,0.1); border: 1px solid #10b981; color: #10b981; padding: 15px; border-radius: 10px; font-family: monospace; word-break: break-all; margin-bottom: 15px; }
-        .loading { text-align: center; color: var(--primary); font-weight: bold; display: none; }
+        #res { margin-top: 25px; padding: 15px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); display: none; animation: fadeIn 0.5s; }
+        .v { color: #10b981; font-family: 'Courier New', Courier, monospace; word-break: break-all; margin-top: 8px; font-weight: bold; background: rgba(16,185,129,0.1); padding: 10px; border-radius: 8px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="search-card">
-        <h2 style="margin-top:0">🔍 Kiểm tra Firmware nhanh</h2>
-        <p style="color:#888; font-size: 14px;">Nhập thông tin để lấy build One UI mới nhất từ Samsung Server.</p>
-        
-        <div class="input-group">
-            <input type="text" id="model" placeholder="Model (ví dụ: SM-S928B)" spellcheck="false">
-            <input type="text" id="csc" placeholder="CSC (ví dụ: XXV)" spellcheck="false">
-            <button id="btn" onclick="quickCheck()">KIỂM TRA NGAY</button>
-        </div>
+<div class="box">
+    <h2>Samsung FOTA Quick</h2>
+    <div class="group">
+        <input type="text" id="m" placeholder="Model (VD: SM-S928B)" autocomplete="off">
+        <input type="text" id="c" placeholder="CSC (VD: XXV)" autocomplete="off">
+        <button id="b" onclick="go()">TRA CỨU NGAY</button>
+    </div>
 
-        <div id="loading" class="loading">⏳ Đang truy vấn server Samsung...</div>
-
-        <div id="result-area">
-            <div class="res-label">Phiên bản mới nhất (Latest Firmware):</div>
-            <div id="ver" class="res-value"></div>
-            <div style="font-size: 11px; color:#555">Dữ liệu được lấy trực tiếp từ FOTA Cloud (Protocol 3.0)</div>
-        </div>
+    <div id="res">
+        <div style="font-size: 13px; color: #888;">Phiên bản mới nhất:</div>
+        <div id="v" class="v"></div>
     </div>
 </div>
 
 <script>
-    async function quickCheck() {
-        const model = document.getElementById('model').value.toUpperCase().trim();
-        const csc = document.getElementById('csc').value.toUpperCase().trim();
-        const btn = document.getElementById('btn');
-        const load = document.getElementById('loading');
-        const resArea = document.getElementById('result-area');
-        const verDiv = document.getElementById('ver');
+    async function go() {
+        const m = document.getElementById('m').value.toUpperCase().trim();
+        const c = document.getElementById('c').value.toUpperCase().trim();
+        const b = document.getElementById('b');
+        const r = document.getElementById('res');
+        const v = document.getElementById('v');
 
-        if(!model || !csc) { alert("Bạn chưa nhập đủ Model hoặc CSC kìa!"); return; }
+        if(!m || !c) return alert("Vui lòng nhập đủ thông tin!");
 
-        // Hiệu ứng loading
-        btn.disabled = true;
-        load.style.display = "block";
-        resArea.style.display = "none";
+        b.disabled = true;
+        b.innerText = "⏳ Đang kết nối...";
+        r.style.display = "none";
 
-        // Tạo Payload XML chuẩn Samsung
-        const payload = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><FUSRequest><Device><Model>${model}</Model><SalesCode>${csc}</SalesCode></Device><Protocol>3.0</Protocol></FUSRequest>`;
-        
-        // Sử dụng Proxy để lách luật CORS
-        const proxyUrl = "https://api.allorigins.win/get?url=";
-        const targetUrl = encodeURIComponent("https://fota-cloud-dn.ospserver.net/firmware/FUS/check");
+        // Sử dụng Proxy corsproxy.io (ổn định hơn cho Samsung FOTA)
+        const proxy = "https://corsproxy.io/?";
+        const target = "https://fota-cloud-dn.ospserver.net/firmware/FUS/check";
+        const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><FUSRequest><Device><Model>${m}</Model><SalesCode>${c}</SalesCode></Device><Protocol>3.0</Protocol></FUSRequest>`;
 
         try {
-            const response = await fetch(proxyUrl + targetUrl + "&method=POST&body=" + encodeURIComponent(payload));
-            const json = await response.json();
-            
-            // Giải mã Base64 vì server Samsung trả về dữ liệu mã hóa
-            const decodedXml = atob(json.contents);
-            
-            // Tìm chuỗi phiên bản trong XML (Dùng Regex cho nhanh và nhẹ)
-            const match = decodedXml.match(/<fw_version>([^<]+)<\/fw_version>/) || decodedXml.match(/<latest>([^<]+)<\/latest>/);
+            const response = await fetch(proxy + encodeURIComponent(target), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/xml' },
+                body: xml
+            });
 
-            if (match && match[1]) {
-                verDiv.innerText = match[1];
-                resArea.style.display = "block";
+            const text = await response.text();
+            
+            // Giải mã Base64 sang XML thuần
+            const decoded = atob(text);
+            
+            // Tìm fw_version hoặc latest
+            const match = decoded.match(/<fw_version>([^<]+)<\/fw_version>/) || decoded.match(/<latest>([^<]+)<\/latest>/);
+
+            if (match) {
+                v.innerText = match[1];
+                r.style.display = "block";
             } else {
-                verDiv.innerText = "❌ Không tìm thấy dữ liệu. Có thể sai Model/CSC hoặc máy chưa có Firmware.";
-                resArea.style.display = "block";
+                v.innerText = "❌ Không tìm thấy firmware cho Model/CSC này.";
+                r.style.display = "block";
             }
         } catch (e) {
-            alert("Lỗi kết nối hoặc Proxy bị quá tải. Hãy thử lại sau vài giây!");
+            v.innerText = "❌ Lỗi: Server Samsung đang từ chối kết nối. Hãy thử lại sau vài giây.";
+            r.style.display = "block";
         } finally {
-            btn.disabled = false;
-            load.style.display = "none";
+            b.disabled = false;
+            b.innerText = "TRA CỨU NGAY";
         }
     }
 </script>
