@@ -1,25 +1,33 @@
-name: Galaxy FOTA Ultimate Auto
+name: Galaxy FOTA Auto-Sync
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'checker.py'
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 * * * *' # Tự động chạy mỗi tiếng một lần
+
 jobs:
-  build:
+  run-sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-      - run: pip install httpx
-      - run: python checker.py
-      - name: Save Results
+      - name: Install Lib
+        run: pip install httpx
+      - name: Check Firmware
+        run: python checker.py
+      - name: Sync to Web
         run: |
           git config --global user.name 'Galaxy-Bot'
           git config --global user.email 'bot@galaxy.com'
           git add data.json
-          git commit -m "Capture: Latest Firmware [skip ci]" || exit 0
+          git commit -m "Update firmware data [skip ci]" || exit 0
           git push origin main --force
