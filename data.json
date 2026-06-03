@@ -1,14 +1,16 @@
 [
     {
+        "name": "Tab S10 Plus",
         "model": "SM-X820",
         "csc": "XSP",
-        "version": "Server Busy - Thử lại sau",
-        "time": "09:08:19 03/06/2026"
+        "version": "Server Samsung Busy",
+        "time": "11:15 - 03/06/2026"
     },
     {
+        "name": "S24 Ultra",
         "model": "SM-S928B",
         "csc": "XXV",
-        "version": "Server Busy - Thử lại sau",
-        "time": "09:08:19 03/06/2026"
+        "version": "Server Samsung Busy",
+        "time": "11:15 - 03/06/2026"
     }
 ]
